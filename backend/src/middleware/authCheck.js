@@ -1,11 +1,12 @@
-import jwt from 'jsonwebtoken'
+import jwt from "jsonwebtoken";
 
 export const checkAuth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
+    
     if (!authHeader) {
-      return res.status(401).json({ message: "missing authentications" });
+      return res.status(401).json({ message: "cations" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -19,7 +20,6 @@ export const checkAuth = (req, res, next) => {
     req.user = decoded;
 
     next();
-    
   } catch (error) {
     console.error("Server error occured", error);
     res.status(500).json({ message: "Server error occured" });

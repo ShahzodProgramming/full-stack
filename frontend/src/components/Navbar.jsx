@@ -6,8 +6,6 @@ export const Navbar = () => {
   const logout = useAuthStore((state) => state.logout);
 
   const token = useAuthStore((state) => state.token);
-  console.log(token);
-
   return (
     <nav className="flex flex-col sm:flex-row gap-5 2xs:gap-0 items-center justify-between w-full pb-3 border-b-2 border-b-green-500 border-dashed">
       <div className="italic text-xl">Welcome, businessman!</div>

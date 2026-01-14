@@ -1,9 +1,11 @@
 import { postModal } from "../modules/post.js";
+import jwt from "jsonwebtoken";
+
 export const postCreate = async (req, res) => {
   try {
-    const { title, content } = req.body;
-    console.log("Shit orked");
-    if (!title && !content) {
+    const { title, content, token } = req.body;
+
+    if (!title || !content) {
       return res.status(400).json({ message: "Title or content wasn't given" });
     }
 

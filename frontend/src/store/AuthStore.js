@@ -13,13 +13,11 @@ export const useAuthStore = create((set) => ({
         username,
         email,
       });
-      console.log(response);
 
       const { token, message } = response.data;
       localStorage.setItem("token", token);
       set({ token });
 
-      console.log(message);
       navigate("/");
     } catch (error) {
       alert(error.response.data.message);
@@ -37,13 +35,11 @@ export const useAuthStore = create((set) => ({
         password,
         email,
       });
-      console.log(response);
 
       const { token, message } = response.data;
       localStorage.setItem("token", token);
       set({ token });
 
-      console.log(message);
       navigate("/");
     } catch (error) {
       alert(error.response.data.message);
