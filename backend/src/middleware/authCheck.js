@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 export const checkAuth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-
     
     if (!authHeader) {
       return res.status(401).json({ message: "cations" });

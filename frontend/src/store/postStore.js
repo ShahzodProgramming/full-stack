@@ -37,4 +37,25 @@ export const usePostStore = create((set, get) => ({
       console.error(error.response?.data?.message || error.message);
     }
   },
+
+  getPost: async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:4444/api/post/get",
+        { token: "Bearer " + get().token },
+        {
+          headers: {
+            Authorization: `Bearer ${get().token}`,
+          },
+        }
+      );
+
+      set((state) => ({ post: response.data.posts }));
+
+      console.log(get().post);
+    } catch (error) {
+      console.error("An error, your majesty", error);
+      console.error(error.response?.data?.message || error.message);
+    }
+  },
 }));
