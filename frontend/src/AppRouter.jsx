@@ -1,10 +1,11 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useParams } from "react-router-dom";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Sign } from "./pages/Sign";
 import { Posts } from "./pages/Posts/Posts";
 import { CreatePosts } from "./pages/Posts/CreatePosts";
+import { EditPosts } from "./pages/Posts/EditPosts";
 
 export const AppRouter = () => {
   return (
@@ -16,6 +17,7 @@ export const AppRouter = () => {
         <Route path="/post">
           <Route path="" element={<Posts />} />
           <Route path="create" element={<CreatePosts />} />
+          <Route path="edit/:postId" element={<EditPosts />} />
         </Route>
       </Routes>
     </div>

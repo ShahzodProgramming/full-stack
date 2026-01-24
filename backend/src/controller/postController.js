@@ -50,6 +50,9 @@ export const postEdit = async (req, res) => {
     const { title, content } = req.body;
     const { authorization } = req.headers;
     const { postId } = req.params;
+
+    console.log(req.params);
+
     const exists = await postModal.findById(postId);
 
     if (!exists) {
@@ -67,7 +70,10 @@ export const postEdit = async (req, res) => {
 
     const editedPost = await postModal.findByIdAndUpdate(
       postId,
-      { title, content },
+      {
+        title: title ? title : exists.title,
+        content: content ? content : exists.content,
+      },
       { new: true }
     );
 
@@ -76,13 +82,42 @@ export const postEdit = async (req, res) => {
       return res.status(404).json({ message: "Failed to edit the post" });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Post edited successfully", post: editedPost });
+    return res.status(200).json({ message: "Post edited successfully" });
   } catch (error) {
     console.error("An error occured", error);
     return res
       .status(500)
       .json({ message: "Something went wrong in the server" });
+  }
+};
+
+export const postDelete = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { authorization } = req.headers;
+
+    const exists = await postModal.findById(postId);
+    if (!exists) {
+      console.log("User tried to delete an invalid post");
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const decoded = jwt.decode(authorization.split(" ")[1]);
+
+    if (decoded.id !== exists.userId) {
+      console.log("User tried to delete the post of another person");
+      return res
+        .status(403)
+        .json({ message: "Can't delete the post of another user." });
+    }
+
+    const deletedPost = await postModal.findByIdAndDelete(postId);
+
+    return res
+      .status(200)
+      .json({ message: "Post deleted successfully", deletedPost });
+  } catch (error) {
+    console.error("An error occured", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
