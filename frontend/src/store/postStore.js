@@ -1,10 +1,11 @@
 import axios from "axios";
 import { create } from "zustand";
+import { useAuthStore } from "./AuthStore";
 
 export const usePostStore = create((set, get) => ({
-  token: localStorage.getItem("token") || null,
+  token: localStorage.getItem("token"),
   post: [],
-  createPost: async (title, content, navigate) => {
+  createPost: async (title, content, category, favourite, navigate) => {
     try {
       if (!get().token) {
         alert("Unathorized");
@@ -23,6 +24,8 @@ export const usePostStore = create((set, get) => ({
         {
           title,
           content,
+          category,
+          favourite,
         },
         {
           headers: {
@@ -31,12 +34,16 @@ export const usePostStore = create((set, get) => ({
         },
       );
 
-      navigate("/post");
-
-      console.log(response.data);
+      navigate(-1);
     } catch (error) {
       console.error("An error, your majesty", error);
       console.error(error.response?.data?.message || error.message);
+
+      if (error.response.data.reason === "Token expired") {
+        console.log("Token expired please relogin");
+        const logout = useAuthStore((state) => state.logout);
+        logout();
+      }
     }
   },
 
@@ -53,26 +60,32 @@ export const usePostStore = create((set, get) => ({
       );
 
       set((state) => ({ post: response.data.posts }));
-
-      console.log(get().post);
     } catch (error) {
       console.error("An error, your majesty", error);
       console.error(error.response?.data?.message || error.message);
+
+      if (error.response.data.reason === "Token expired") {
+        console.log("Token expired please relogin");
+        const logout = useAuthStore((state) => state.logout);
+        logout();
+      }
     }
   },
-  editPost: async (content, title, id, navigate) => {
+  editPost: async (content, title, category, favourite, id, navigate) => {
     try {
       if (!content || !title) {
         console.error("Title or content wasn't given");
         alert("Title or content wa+sn't given");
         return null;
       }
-
       const response = await axios.put(
         `http://localhost:4444/api/post/edit/${id}`,
         {
           content,
           title,
+          category:
+            typeof category === "object" ? category : category.split(" "),
+          favourite,
         },
         {
           headers: {
@@ -81,14 +94,20 @@ export const usePostStore = create((set, get) => ({
         },
       );
 
-      console.log(response);
+      get().getPost();
 
-      navigate("/post");
+      navigate(-1);
       return "success";
     } catch (error) {
       console.error("An error occured!");
       console.error(error.response?.data?.message || error.message);
       console.log(error);
+
+      if (error.response?.data?.reason === "Token expired") {
+        console.log("Token expired please relogin");
+        const logout = useAuthStore((state) => state.logout);
+        logout();
+      }
     }
   },
   deletePost: async (id) => {
@@ -112,6 +131,46 @@ export const usePostStore = create((set, get) => ({
     } catch (error) {
       console.error("An error occured", error);
       console.error(error.response?.data?.message || error.message);
+
+      if (error.response.data.reason === "Token expired") {
+        console.log("Token expired please relogin");
+        const logout = useAuthStore((state) => state.logout);
+        logout();
+      }
+    }
+  },
+  favouritePost: async (favourite, id) => {
+    try {
+      if (!id) {
+        console.error("Error occured in the request");
+        return null;
+      }
+      const response = await axios.put(
+        `http://localhost:4444/api/post/edit/favourite`,
+        {
+          favourite,
+          postId: id,
+        },
+        {
+          headers: {
+            authorization: "Bearer " + get().token,
+          },
+        },
+      );
+
+      get().getPost();
+      console.log("Post updated successfully");
+      return "success";
+    } catch (error) {
+      console.error("An error occured!");
+      console.error(error.response?.data?.message || error.message);
+      console.log(error);
+
+      if (error.response?.data?.reason === "Token expired") {
+        console.log("Token expired please relogin");
+        const logout = useAuthStore((state) => state.logout);
+        logout();
+      }
     }
   },
 }));

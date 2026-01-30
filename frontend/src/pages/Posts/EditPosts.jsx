@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navbar } from "../../components/Navbar";
 import { useAuthStore } from "../../store/AuthStore";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { usePostStore } from "../../store/postStore";
 
 export const EditPosts = () => {
@@ -11,12 +11,31 @@ export const EditPosts = () => {
 
   const [titleInput, setTitleInput] = useState("");
   const [contentInput, setContentInput] = useState("");
+  const [categoryInput, setCategoryInput] = useState("");
+  const [favouriteInput, setFavouriteInput] = useState(false);
 
   const usePostEdit = usePostStore((state) => state.editPost);
+
+  const [searchParam] = useSearchParams();
+  useEffect(() => {
+    setTitleInput(searchParam.get("title"));
+    setContentInput(searchParam.get("content"));
+    setCategoryInput(searchParam.get("category"));
+    setFavouriteInput(searchParam.get("favourite"));
+  }, []);
+
   const handlePostSubmit = (e) => {
     e.preventDefault();
-    usePostEdit(contentInput, titleInput, postId, navigate);
+    usePostEdit(
+      contentInput,
+      titleInput,
+      categoryInput,
+      favouriteInput,
+      postId,
+      navigate,
+    );
   };
+
   return (
     <div className="w-full">
       <Navbar />
@@ -34,6 +53,31 @@ export const EditPosts = () => {
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
             />
+
+            <input
+              type="text"
+              placeholder="Category for the post, please write them between spaces."
+              className="w-[90%] mx-auto border mt-5 border-green-900 p-2 rounded focus:bg-green-50 transition"
+              value={categoryInput}
+              onChange={(e) => setCategoryInput(e.target.value)}
+            />
+
+            <div className="mt-3 items-center">
+              <div className="flex items-center gap-3">
+                <label
+                  className="text-green-700 text-lg"
+                  htmlFor="checkbox_fav"
+                >
+                  Add to favourite list:
+                </label>
+                <input
+                  type="checkbox"
+                  id="checkbox_fav"
+                  className="w-5 h-5"
+                  onChange={() => setFavouriteInput((prev) => !prev)}
+                />
+              </div>
+            </div>
 
             <textarea
               type="text"

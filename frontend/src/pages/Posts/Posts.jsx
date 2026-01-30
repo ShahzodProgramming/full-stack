@@ -16,7 +16,11 @@ export const Posts = () => {
     getPosts();
   }, []);
 
-  console.log(posts);
+  const usePostEdit = usePostStore((state) => state.editPost);
+  const handlePostFavUpdate = (favouriteInput, postId) => {
+    usePostEdit(favouriteInput, postId, navigate);
+  };
+
   return (
     <div className="w-full">
       <Navbar />
@@ -37,13 +41,20 @@ export const Posts = () => {
           </div>
 
           <div className="mt-10">
-            <button
-              onClick={getPosts}
-              className="border-2 border-green-400 text-lg py-2 px-5 rounded-xl hover:border-green-600 transition"
-            >
-              Click to refresh posts
-            </button>
+            <div className="flex gap-5">
+              <button
+                onClick={getPosts}
+                className="border-2 border-green-400 text-lg py-2 px-5 rounded-xl hover:border-green-600 transition"
+              >
+                Click to refresh posts
+              </button>
 
+              <Link to={"/post/favourite"}>
+                <button className="border-2 border-green-400 text-lg py-2 px-5 rounded-xl hover:border-green-600 transition">
+                  Go to selected posts
+                </button>
+              </Link>
+            </div>
             <div className="flex flex-col gap-5 mt-20">
               {posts?.map((e) => (
                 <div
@@ -52,28 +63,64 @@ export const Posts = () => {
                 >
                   <div>
                     <div>
-                      <span className="text-gray-500 text-sm">Title:</span>
                       <p className="text-2xl">{e.title}</p>
                     </div>
 
-                    <div className="ml-[2%]">
-                      <span className="text-gray-500 text-sm">Content:</span>
+                    <div>
                       <p className="text-lg">{e.content}</p>
+                    </div>
+
+                    <div className="flex gap-3 mt-10">
+                      {e.category.length === 0 ? (
+                        ""
+                      ) : (
+                        <span className="flex gap-1">
+                          {e?.category?.map((category, i) => (
+                            <Link
+                              key={category}
+                              to={`/post/category/${category}`}
+                            >
+                              <span className="text-sm p-2 hover:bg-gray-300">
+                                {category}
+                              </span>
+                            </Link>
+                          ))}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex gap-3 items-start">
-                    <Link to={`/post/edit/${e._id}`}>
-                      <button className="bg-yellow-300  px-3 py-1 hover:bg-yellow-500">
-                        Edit
+                  <div className="flex items-start">
+                    <div className="flex items-center gap-3">
+                      {e.favourite ? (
+                        <i
+                          className="ri-star-fill text-xl"
+                          onClick={() => {
+                            handlePostFavUpdate(false, e._id);
+                          }}
+                        ></i>
+                      ) : (
+                        <i
+                          className="ri-star-line text-xl"
+                          onClick={() => {
+                            handlePostFavUpdate(true, e._id);
+                          }}
+                        ></i>
+                      )}
+                      <Link
+                        to={`/post/edit/${e._id}?title=${encodeURIComponent(e.title)}&content=${encodeURIComponent(e.content)}&category=${encodeURIComponent(e.category.join(" "))}&favourite=${encodeURIComponent(e.favourite)}`}
+                      >
+                        <button className="bg-yellow-300  px-3 py-1 hover:bg-yellow-500">
+                          Edit
+                        </button>
+                      </Link>
+                      <button
+                        className="bg-red-400 px-3 py-1 hover:bg-red-500"
+                        onClick={() => usePostDelete(e._id)}
+                      >
+                        Delete
                       </button>
-                    </Link>
-                    <button
-                      className="bg-red-400 px-3 py-1 hover:bg-red-500"
-                      onClick={() => usePostDelete(e._id)}
-                    >
-                      Delete
-                    </button>
+                    </div>
                   </div>
                 </div>
               ))}

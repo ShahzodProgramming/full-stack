@@ -20,7 +20,7 @@ export const Sign = () => {
       navigate
     );
 
-    console.log("Registered successfully", response);
+    console.log("Registered successfully");
   };
   return (
     <div className="w-full">

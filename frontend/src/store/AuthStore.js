@@ -4,7 +4,6 @@ import axios from "axios";
 export const useAuthStore = create((set) => ({
   user: null,
   token: localStorage.getItem("token") || null,
-  posts: [],
 
   signin: async (username, password, email, navigate) => {
     try {
@@ -14,16 +13,33 @@ export const useAuthStore = create((set) => ({
         email,
       });
 
-      const { token, message } = response.data;
-      localStorage.setItem("token", token);
-      set({ token });
+      navigate("/email-verification");
+    } catch (error) {
+      alert(error.response.data.message);
+      console.log(
+        "Your majesty, an error is to be appeared upon you.",
+        error.response.data.message,
+      );
+      throw error;
+    }
+  },
+  emailVerification: async (token, navigate) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:4444/api/verify-email",
+        {
+          code: token,
+        },
+      );
 
+      set({ token: response.data.token });
+      localStorage.setItem("token", token);
       navigate("/");
     } catch (error) {
       alert(error.response.data.message);
       console.log(
         "Your majesty, an error is to be appeared upon you.",
-        error.response.data.message
+        error.response.data.message,
       );
 
       throw error;
@@ -37,22 +53,23 @@ export const useAuthStore = create((set) => ({
       });
 
       const { token, message } = response.data;
-      localStorage.setItem("token", token);
-      set({ token });
+      console.log(message);
 
+      set({ token });
+      localStorage.setItem("token", token);
       navigate("/");
     } catch (error) {
       alert(error.response.data.message);
       console.log(
         "Your majesty, an error is to be appeared upon you.",
-        error.response.data.message
+        error.response.data.message,
       );
 
       throw error;
     }
   },
   logout: async () => {
-    set({ token: null, posts: [], user: null });
+    set({ token: null, user: null });
     localStorage.removeItem("token");
   },
 }));

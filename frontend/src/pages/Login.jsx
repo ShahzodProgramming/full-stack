@@ -14,7 +14,7 @@ export const Login = () => {
     e.preventDefault();
     const response = await login(passwordInput, emailInput, navigate);
 
-    console.log("Registered successfully", response);
+    console.log("Registered successfully");
   };
   return (
     <div className="w-full">

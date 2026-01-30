@@ -1,12 +1,11 @@
 import { userModel } from "../modules/user.js";
-import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import { v4 as uuid } from "uuid";
 
+// this must have the whole user's object
 const createToken = (user) => {
-  return jwt.sign({ id: user._id }, "secret321");
+  return jwt.sign({ id: user._id }, "secret321", { expiresIn: "72h" });
 };
 
 export const signUp = async (req, res) => {
@@ -21,7 +20,9 @@ export const signUp = async (req, res) => {
 
     const exists = await userModel.findOne({ email });
     if (exists) {
-      return res.status(400).json("User with the same email exists");
+      return res
+        .status(400)
+        .json({ message: "User with the same email exists" });
     }
 
     if (!exists) {
@@ -32,11 +33,11 @@ export const signUp = async (req, res) => {
         email,
       });
       await newUser.save();
-
       await sendCodeToUserEmail(email);
-      return res
-        .status(201)
-        .json({ message: "user created successfuly but not verified yet, check your email to verify your account" });
+      return res.status(201).json({
+        message:
+          "user created successfuly but not verified yet, check your email to verify your account",
+      });
     }
 
     return res.status(400).json({ message: "User already exists" });
@@ -68,13 +69,29 @@ export const sendCodeToUserEmail = async (email) => {
     subject: "Hello ✔",
     text: `Verificaiton code: ${createTokenEmail}`,
     html: `
-      <div style="font-family: Arial, sans-serif;">
+  <div style="font-family: Arial, sans-serif;">
     <h2>Email Verification</h2>
-    <p>Your verification code is:</p>
-    <p style="font-size: 20px; font-weight: bold;">
-      ${createTokenEmail}
+
+    <p>Your verification link:</p>
+
+    <a
+      href="http://localhost:5173/email-verification-next?createTokenEmail=${createTokenEmail}"
+      style="
+        display: inline-block;
+        padding: 12px 20px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      "
+    >
+      Verify your account
+    </a>
+
+    <p style="margin-top: 20px;">
+      If you didn’t request this, please ignore this email.
     </p>
-    <p>If you didn’t request this, please ignore this email.</p>
   </div>
 `,
   });
@@ -95,14 +112,12 @@ export const verifyEmail = async (req, res) => {
 
     const response = jwt.verify(code, "secret321");
     if (!response) {
-      console.log("The code was incorrect");
       return res.status(400).json({ message: "The code as incorrect" });
     } else {
       const user = await userModel.findOne({ email: response.email });
       user.isVerified = true;
       await user.save();
-      console.log(user);
-      
+
       const token = createToken(user);
       return res.status(200).json({ message: "Verified successfully", token });
     }
